@@ -9,6 +9,11 @@ import 'package:intl/intl.dart';
 
 final formatter = DateFormat.yMd();
 List<String> incomeCategories = ['Transfer', 'Salary', 'Other Income'];
+Map<String, Color> colors = {
+  'red': const Color(0xfff87171),
+  'green': const Color(0xff84cc16),
+  'purple': Colors.deepPurpleAccent,
+};
 
 class OverviewContent extends StatefulWidget {
   const OverviewContent(
@@ -51,6 +56,42 @@ class _OverviewContentState extends State<OverviewContent> {
         }
       });
 
+      double totalExpenses = filteredTransactionItems.fold(0, (a, b) {
+        if (!incomeCategories.contains(b.category.title)) {
+          return a + b.amount;
+        } else {
+          return a;
+        }
+      });
+
+      double totalIncome = filteredTransactionItems.fold(0, (a, b) {
+        if (incomeCategories.contains(b.category.title)) {
+          return a + b.amount;
+        } else {
+          return a;
+        }
+      });
+
+      Map<String, double> expensesByCategory = {};
+      Map<String, double> incomeByCategory = {};
+      filteredTransactionItems.forEach((element) {
+        if (!incomeCategories.contains(element.category.title)) {
+          if (expensesByCategory.containsKey(element.category.title)) {
+            expensesByCategory[element.category.title] =
+                expensesByCategory[element.category.title]! + element.amount;
+          } else {
+            expensesByCategory[element.category.title] = element.amount;
+          }
+        } else {
+          if (incomeByCategory.containsKey(element.category.title)) {
+            incomeByCategory[element.category.title] =
+                incomeByCategory[element.category.title]! + element.amount;
+          } else {
+            incomeByCategory[element.category.title] = element.amount;
+          }
+        }
+      });
+
       content = Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -64,11 +105,11 @@ class _OverviewContentState extends State<OverviewContent> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text(
+                Text(
                   'Total Balance',
                   style: TextStyle(
                     fontSize: 16,
-                    color: Colors.deepPurpleAccent,
+                    color: colors['purple'],
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -77,9 +118,7 @@ class _OverviewContentState extends State<OverviewContent> {
                   '${balance >= 0 ? '+' : '-'} \$${balance.abs().toStringAsFixed(2)}',
                   style: TextStyle(
                     fontSize: 24,
-                    color: balance >= 0
-                        ? const Color(0xff84cc16)
-                        : const Color(0xfff87171),
+                    color: balance >= 0 ? colors['green'] : colors['red'],
                     fontWeight: FontWeight.w700,
                   ),
                 )
@@ -97,25 +136,95 @@ class _OverviewContentState extends State<OverviewContent> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text(
-                    'Total Balance',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.deepPurpleAccent,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Expenses',
+                        style: TextStyle(
+                          fontSize: 20,
+                          color: colors['red'],
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      Text(
+                        '\$${totalExpenses.toStringAsFixed(2)}',
+                        style: TextStyle(
+                          fontSize: 20,
+                          color: colors['red'],
+                          fontWeight: FontWeight.w800,
+                        ),
+                      )
+                    ],
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${balance >= 0 ? '+' : '-'} \$${balance.abs().toStringAsFixed(2)}',
-                    style: TextStyle(
-                      fontSize: 24,
-                      color: balance >= 0
-                          ? const Color(0xff84cc16)
-                          : const Color(0xfff87171),
-                      fontWeight: FontWeight.w700,
-                    ),
-                  )
+                  Container(
+                    margin: const EdgeInsets.fromLTRB(20, 5, 5, 5),
+                    child: Column(children: [
+                      for (var entry in expensesByCategory.entries)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              entry.key,
+                              style: const TextStyle(
+                                fontSize: 14,
+                              ),
+                            ),
+                            Text(
+                              '\$${entry.value.toStringAsFixed(2)}',
+                              style: const TextStyle(
+                                fontSize: 14,
+                              ),
+                            )
+                          ],
+                        ),
+                    ]),
+                  ),
+                  SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Income',
+                        style: TextStyle(
+                          fontSize: 20,
+                          color: colors['green'],
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      Text(
+                        '\$${totalIncome.toStringAsFixed(2)}',
+                        style: TextStyle(
+                          fontSize: 20,
+                          color: colors['green'],
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    margin: const EdgeInsets.fromLTRB(20, 5, 5, 5),
+                    child: Column(children: [
+                      for (var entry in incomeByCategory.entries)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              entry.key,
+                              style: const TextStyle(
+                                fontSize: 14,
+                              ),
+                            ),
+                            Text(
+                              '\$${entry.value.toStringAsFixed(2)}',
+                              style: const TextStyle(
+                                fontSize: 14,
+                              ),
+                            )
+                          ],
+                        ),
+                    ]),
+                  ),
                 ],
               ),
             ),
