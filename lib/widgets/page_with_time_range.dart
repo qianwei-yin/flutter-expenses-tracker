@@ -53,10 +53,6 @@ class _PageWithTimeRangeState extends State<PageWithTimeRange> {
 
   @override
   Widget build(BuildContext context) {
-    // print(timeIndex);
-    print(widget.selectedIndex);
-    // print('here');
-
     return Column(
       children: [
         Column(
@@ -99,7 +95,7 @@ class _PageWithTimeRangeState extends State<PageWithTimeRange> {
         Expanded(
           child: widget.selectedIndex == 0
               ? const Text('Index 0: Overview')
-              : const DetailsList(),
+              : DetailsList(timeIndex: timeIndex, filterOption: filterOption),
         ),
       ],
     );

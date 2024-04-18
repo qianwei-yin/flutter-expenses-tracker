@@ -11,7 +11,11 @@ import 'package:intl/intl.dart';
 final formatter = DateFormat.yMd();
 
 class DetailsList extends StatefulWidget {
-  const DetailsList({super.key});
+  const DetailsList(
+      {super.key, required this.timeIndex, required this.filterOption});
+
+  final DateTime timeIndex;
+  final String filterOption;
 
   @override
   State<DetailsList> createState() => _DetailsListState();
@@ -116,18 +120,40 @@ class _DetailsListState extends State<DetailsList> {
 
   @override
   Widget build(BuildContext context) {
-    print('here');
+    print(
+        "items need to be in the same ${widget.filterOption} as ${widget.timeIndex}");
+
+    final List<TransactionItem> filteredTransactionItems = [];
+    for (final item in _transactionItems) {
+      final bool isSameYear = item.datetime.year == widget.timeIndex.year;
+      final bool isSameMonth = item.datetime.month == widget.timeIndex.month;
+      final bool isSameDay = item.datetime.day == widget.timeIndex.day;
+
+      if (widget.filterOption == 'Year' && isSameYear) {
+        filteredTransactionItems.add(item);
+      }
+      if (widget.filterOption == 'Month' && isSameMonth && isSameYear) {
+        filteredTransactionItems.add(item);
+      }
+      if (widget.filterOption == 'Day' &&
+          isSameDay &&
+          isSameMonth &&
+          isSameYear) {
+        filteredTransactionItems.add(item);
+      }
+    }
+
     Widget content = const Center(child: Text('No items added yet.'));
 
     if (_isLoading) {
       content = const Center(child: CircularProgressIndicator());
     }
 
-    if (_transactionItems.isNotEmpty) {
+    if (filteredTransactionItems.isNotEmpty) {
       content = ListView.builder(
-          itemCount: _transactionItems.length,
+          itemCount: filteredTransactionItems.length,
           itemBuilder: (ctx, index) {
-            final item = _transactionItems[index];
+            final item = filteredTransactionItems[index];
             inspect(item);
 
             return Dismissible(
