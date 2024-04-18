@@ -13,77 +13,21 @@ final formatter = DateFormat.yMd();
 
 class DetailsList extends StatefulWidget {
   const DetailsList(
-      {super.key, required this.timeIndex, required this.filterOption});
+      {super.key,
+      required this.filteredTransactionItems,
+      required this.error,
+      required this.isLoading});
 
-  final DateTime timeIndex;
-  final String filterOption;
+  final List<TransactionItem> filteredTransactionItems;
+  final String? error;
+  final bool isLoading;
 
   @override
   State<DetailsList> createState() => _DetailsListState();
 }
 
 class _DetailsListState extends State<DetailsList> {
-  List<TransactionItem> _transactionItems = [];
-  var _isLoading = true;
-  String? _error;
-
   String _sortBy = 'time+';
-
-  @override
-  void initState() {
-    super.initState();
-    _loadItems();
-  }
-
-  void _loadItems() async {
-    final url = Uri.https(
-        'info6350-test-default-rtdb.firebaseio.com', 'transaction-items.json');
-
-    try {
-      final response = await http.get(url);
-
-      if (response.statusCode >= 400) {
-        setState(() {
-          _error = 'Failed to fetch data. Please try again later.';
-        });
-      }
-
-      if (response.body == 'null') {
-        setState(() {
-          _isLoading = false;
-        });
-        return;
-      }
-
-      final Map<String, dynamic> listData = json.decode(response.body);
-      final List<TransactionItem> loadedItems = [];
-      for (final item in listData.entries) {
-        // print(item);
-        final category = categories.entries
-            .firstWhere(
-                (catItem) => catItem.value.title == item.value['category'])
-            .value;
-        loadedItems.add(
-          TransactionItem(
-            id: item.key,
-            category: category,
-            amount: item.value['amount'],
-            datetime: DateTime.parse(item.value['datetime']),
-            account: item.value['account'],
-            description: item.value['description'],
-          ),
-        );
-      }
-      setState(() {
-        _transactionItems = loadedItems;
-        _isLoading = false;
-      });
-    } catch (error) {
-      setState(() {
-        _error = 'Something went wrong! Please try again later.';
-      });
-    }
-  }
 
   void _addItem() async {
     // final newItem = await Navigator.of(context).push<TransactionItem>(
@@ -121,30 +65,6 @@ class _DetailsListState extends State<DetailsList> {
     // }
   }
 
-  List<TransactionItem> filterTransactionItems(
-      List<TransactionItem> transactionItems) {
-    final List<TransactionItem> filteredTransactionItems = [];
-    for (final item in transactionItems) {
-      final bool isSameYear = item.datetime.year == widget.timeIndex.year;
-      final bool isSameMonth = item.datetime.month == widget.timeIndex.month;
-      final bool isSameDay = item.datetime.day == widget.timeIndex.day;
-
-      if (widget.filterOption == 'Year' && isSameYear) {
-        filteredTransactionItems.add(item);
-      }
-      if (widget.filterOption == 'Month' && isSameMonth && isSameYear) {
-        filteredTransactionItems.add(item);
-      }
-      if (widget.filterOption == 'Day' &&
-          isSameDay &&
-          isSameMonth &&
-          isSameYear) {
-        filteredTransactionItems.add(item);
-      }
-    }
-    return filteredTransactionItems;
-  }
-
   void sortTransactionItems(List<TransactionItem> transactionItems) {
     transactionItems.sort((a, b) {
       if (_sortBy == 'time+') {
@@ -171,18 +91,14 @@ class _DetailsListState extends State<DetailsList> {
 
   @override
   Widget build(BuildContext context) {
-    print(
-        "items need to be in the same ${widget.filterOption} as ${widget.timeIndex}");
-    print(_sortBy);
-
     Widget content = const Center(child: Text('No transactions yet.'));
 
-    if (_isLoading) {
+    if (widget.isLoading) {
       content = const Center(child: CircularProgressIndicator());
     }
 
     List<TransactionItem> filteredTransactionItems =
-        filterTransactionItems(_transactionItems);
+        widget.filteredTransactionItems;
     sortTransactionItems(filteredTransactionItems);
 
     if (filteredTransactionItems.isNotEmpty) {
@@ -191,9 +107,9 @@ class _DetailsListState extends State<DetailsList> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              const Text(
-                'There are 123 transactions.',
-                style: TextStyle(
+              Text(
+                'There are ${filteredTransactionItems.length} transactions.',
+                style: const TextStyle(
                   fontSize: 11,
                   color: Colors.deepPurpleAccent,
                   fontWeight: FontWeight.w500,
@@ -248,8 +164,8 @@ class _DetailsListState extends State<DetailsList> {
       );
     }
 
-    if (_error != null) {
-      content = Center(child: Text(_error!));
+    if (widget.error != null) {
+      content = Center(child: Text(widget.error!));
     }
 
     return content;
