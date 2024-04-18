@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'package:final_project/widgets/page_with_time_range.dart';
-import 'package:final_project/widgets/details/details_list.dart';
 
 class WholePage extends StatefulWidget {
   const WholePage({super.key});

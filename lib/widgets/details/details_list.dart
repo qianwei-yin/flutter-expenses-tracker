@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import "package:http/http.dart" as http;
 import "package:final_project/models/transaction_item.dart";
 import 'package:final_project/data/categories.dart';
+import 'package:final_project/widgets/details/sort_by.dart';
 
 import 'package:intl/intl.dart';
 
@@ -25,6 +26,8 @@ class _DetailsListState extends State<DetailsList> {
   List<TransactionItem> _transactionItems = [];
   var _isLoading = true;
   String? _error;
+
+  String _sortBy = 'time+';
 
   @override
   void initState() {
@@ -118,13 +121,10 @@ class _DetailsListState extends State<DetailsList> {
     // }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    print(
-        "items need to be in the same ${widget.filterOption} as ${widget.timeIndex}");
-
+  List<TransactionItem> filterTransactionItems(
+      List<TransactionItem> transactionItems) {
     final List<TransactionItem> filteredTransactionItems = [];
-    for (final item in _transactionItems) {
+    for (final item in transactionItems) {
       final bool isSameYear = item.datetime.year == widget.timeIndex.year;
       final bool isSameMonth = item.datetime.month == widget.timeIndex.month;
       final bool isSameDay = item.datetime.day == widget.timeIndex.day;
@@ -142,50 +142,110 @@ class _DetailsListState extends State<DetailsList> {
         filteredTransactionItems.add(item);
       }
     }
+    return filteredTransactionItems;
+  }
 
-    Widget content = const Center(child: Text('No items added yet.'));
+  void sortTransactionItems(List<TransactionItem> transactionItems) {
+    transactionItems.sort((a, b) {
+      if (_sortBy == 'time+') {
+        return a.datetime.compareTo(b.datetime);
+      }
+      if (_sortBy == 'time-') {
+        return b.datetime.compareTo(a.datetime);
+      }
+      if (_sortBy == 'categorya2z') {
+        return a.category.title.compareTo(b.category.title);
+      }
+      if (_sortBy == 'categoryz2a') {
+        return b.category.title.compareTo(a.category.title);
+      }
+      if (_sortBy == 'amount+') {
+        return a.amount.compareTo(b.amount);
+      }
+      if (_sortBy == 'amount-') {
+        return b.amount.compareTo(a.amount);
+      }
+      return 0;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    print(
+        "items need to be in the same ${widget.filterOption} as ${widget.timeIndex}");
+    print(_sortBy);
+
+    Widget content = const Center(child: Text('No transactions yet.'));
 
     if (_isLoading) {
       content = const Center(child: CircularProgressIndicator());
     }
 
-    if (filteredTransactionItems.isNotEmpty) {
-      content = ListView.builder(
-          itemCount: filteredTransactionItems.length,
-          itemBuilder: (ctx, index) {
-            final item = filteredTransactionItems[index];
-            inspect(item);
+    List<TransactionItem> filteredTransactionItems =
+        filterTransactionItems(_transactionItems);
+    sortTransactionItems(filteredTransactionItems);
 
-            return Dismissible(
-              onDismissed: (direction) {
-                if (direction == DismissDirection.endToStart) {
-                  _removeItem(item);
-                }
-                if (direction == DismissDirection.startToEnd) {
-                  print('edit');
-                }
-              },
-              key: ValueKey(item.id),
-              child: ListTile(
-                title: Text(item.category.title),
-                subtitle: Text(
-                  formatter.format(item.datetime),
-                ),
-                leading: categories.entries
-                    .firstWhere(
-                        (catItem) => catItem.value.title == item.category.title)
-                    .value
-                    .icon,
-                trailing: Text(
-                  '\$${item.amount.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+    if (filteredTransactionItems.isNotEmpty) {
+      content = Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              const Text(
+                'There are 123 transactions.',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.deepPurpleAccent,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-            );
-          });
+              SortBy(callback: (val) {
+                setState(() {
+                  _sortBy = val;
+                });
+              }),
+            ],
+          ),
+          Expanded(
+            child: ListView.builder(
+                itemCount: filteredTransactionItems.length,
+                itemBuilder: (ctx, index) {
+                  final item = filteredTransactionItems[index];
+                  inspect(item);
+
+                  return Dismissible(
+                    onDismissed: (direction) {
+                      if (direction == DismissDirection.endToStart) {
+                        _removeItem(item);
+                      }
+                      if (direction == DismissDirection.startToEnd) {
+                        print('edit');
+                      }
+                    },
+                    key: ValueKey(item.id),
+                    child: ListTile(
+                      title: Text(item.category.title),
+                      subtitle: Text(
+                        formatter.format(item.datetime),
+                      ),
+                      leading: categories.entries
+                          .firstWhere((catItem) =>
+                              catItem.value.title == item.category.title)
+                          .value
+                          .icon,
+                      trailing: Text(
+                        '\$${item.amount.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+          ),
+        ],
+      );
     }
 
     if (_error != null) {
