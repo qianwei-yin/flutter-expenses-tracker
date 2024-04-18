@@ -1,8 +1,6 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import "package:http/http.dart" as http;
 import "package:final_project/models/transaction_item.dart";
 import 'package:final_project/data/categories.dart';
 import 'package:final_project/widgets/details/sort_by.dart';
@@ -97,6 +95,10 @@ class _DetailsListState extends State<DetailsList> {
       content = const Center(child: CircularProgressIndicator());
     }
 
+    if (widget.error != null) {
+      content = Center(child: Text(widget.error!));
+    }
+
     List<TransactionItem> filteredTransactionItems =
         widget.filteredTransactionItems;
     sortTransactionItems(filteredTransactionItems);
@@ -162,10 +164,6 @@ class _DetailsListState extends State<DetailsList> {
           ),
         ],
       );
-    }
-
-    if (widget.error != null) {
-      content = Center(child: Text(widget.error!));
     }
 
     return content;

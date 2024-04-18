@@ -188,7 +188,10 @@ class _PageWithTimeRangeState extends State<PageWithTimeRange> {
         ),
         Expanded(
           child: widget.selectedIndex == 0
-              ? const Text('Index 0: Overview')
+              ? OverviewContent(
+                  filteredTransactionItems: _filteredTransactionItems,
+                  error: _error,
+                  isLoading: _isLoading)
               : DetailsList(
                   filteredTransactionItems: _filteredTransactionItems,
                   error: _error,
