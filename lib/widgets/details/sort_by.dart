@@ -21,7 +21,7 @@ class SortBy extends StatefulWidget {
 }
 
 class _SortByState extends State<SortBy> {
-  String _sortBy = 'time+';
+  String _sortBy = 'time-';
 
   @override
   Widget build(BuildContext context) {

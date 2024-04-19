@@ -88,8 +88,8 @@ class _PageWithTimeRangeState extends State<PageWithTimeRange> {
         );
       }
 
+      updateStateOfFilteredTransactionItems();
       setState(() {
-        _filteredTransactionItems = filterTransactionItems(loadedItems);
         _isLoading = false;
       });
     } catch (error) {
@@ -97,6 +97,12 @@ class _PageWithTimeRangeState extends State<PageWithTimeRange> {
         _error = 'Something went wrong! Please try again later.';
       });
     }
+  }
+
+  updateStateOfFilteredTransactionItems() {
+    setState(() {
+      _filteredTransactionItems = filterTransactionItems(loadedItems);
+    });
   }
 
   List<TransactionItem> filterTransactionItems(
@@ -195,7 +201,16 @@ class _PageWithTimeRangeState extends State<PageWithTimeRange> {
               : DetailsList(
                   filteredTransactionItems: _filteredTransactionItems,
                   error: _error,
-                  isLoading: _isLoading),
+                  isLoading: _isLoading,
+                  callback: (item, action) {
+                    if (action == 'add') {
+                      loadedItems.add(item);
+                    } else {
+                      loadedItems.remove(item);
+                    }
+                    updateStateOfFilteredTransactionItems();
+                  },
+                ),
         ),
       ],
     );
