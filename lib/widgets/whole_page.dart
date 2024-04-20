@@ -11,7 +11,7 @@ class WholePage extends StatefulWidget {
 }
 
 class _WholePageState extends State<WholePage> {
-  int _selectedIndex = 2;
+  int _selectedIndex = 1;
 
   void _onItemTapped(int index) {
     setState(() {
