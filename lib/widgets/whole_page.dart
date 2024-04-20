@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:final_project/widgets/page_with_time_range.dart';
+import 'package:final_project/widgets/settings/settings_page.dart';
 
 class WholePage extends StatefulWidget {
   const WholePage({super.key});
@@ -10,7 +11,7 @@ class WholePage extends StatefulWidget {
 }
 
 class _WholePageState extends State<WholePage> {
-  int _selectedIndex = 1;
+  int _selectedIndex = 2;
 
   void _onItemTapped(int index) {
     setState(() {
@@ -23,7 +24,7 @@ class _WholePageState extends State<WholePage> {
     return Scaffold(
       body: Center(
         child: _selectedIndex == 2
-            ? const Text('Index 2: School')
+            ? SettingsPage()
             : PageWithTimeRange(selectedIndex: _selectedIndex),
         // child: _widgetOptions.elementAt(_selectedIndex),
       ),

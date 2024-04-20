@@ -1,8 +1,6 @@
 import 'package:final_project/models/category.dart';
 import 'package:intl/intl.dart';
 
-final formatter = DateFormat.yMd().add_jm();
-
 class TransactionItem {
   const TransactionItem({
     required this.id,
